@@ -21,6 +21,7 @@
  */
 var csound = (function() {
     var Csound = null;
+    var FS = null;
     function load_dep(file, elm, callback) {
         var jsl = document.createElement(elm);
         jsl.type = "text/javascript";
@@ -52,11 +53,13 @@ var csound = (function() {
 		    // csound.Csound.setOption("-M0");
                     // csound.Csound.setMidiCallbacks();
                     csound.module = true;
+		    FS = AudioWorkletGlobalScope.WAM["FS"];
                     if (typeof window.handleMessage !== 'undefined') { 
                         console.log = console.warn = function(mess) {
                             mess += "\n";
                             window.handleMessage(mess);
-                            }
+                        }
+			csound.Csound.setMessageCallback(console.log);
                     }
                     if (typeof window.moduleDidLoad !== 'undefined')
                         window.moduleDidLoad();
@@ -379,6 +382,7 @@ var csound = (function() {
         xmlHttpRequest.open("get", url, true);
         xmlHttpRequest.responseType = "arraybuffer";
         xmlHttpRequest.send(null);
+
     }
 
     /**
