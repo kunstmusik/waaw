@@ -52,7 +52,7 @@
    csound.PlayCsd("gm.csd");
    started = true;
   }
-  document.getElementById('playButton').innerText = "Pause";
+  document.getElementById('playButton').disabled = true; 
   playing = true;
   } else {
   csound.Csound.stop()
