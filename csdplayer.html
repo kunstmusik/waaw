@@ -42,7 +42,7 @@ function moduleDidLoad() {
  function togglePlay(){
   if(loaded) {
   if(!playing) {
-  if(started) csound.Play();
+  if(started) csound.Csound.start();
   else {
    csound.Csound.compileCSD("csdfile.csd");
    csound.Csound.start(); 
