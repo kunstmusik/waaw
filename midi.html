@@ -30,6 +30,9 @@ function attachListeners() {
       addEventListener("mousedown",Play);
    document.getElementById(notes[i]).
       addEventListener("mouseup",Stop);
+   document.getElementById(notes[i]).
+      addEventListener("mouseleave",Stop);
+
    }
 }
  var count = 0;
