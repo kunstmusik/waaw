@@ -36,7 +36,7 @@ var AudioWorkletGlobalScope = AudioWorkletGlobalScope || {};
 /* AUDIO WORKLET CSOUNDOBJ IMPLEMENTATION */ 
 /******************************************/
 if(typeof AudioWorkletNode !== 'undefined' &&
-   CSOUND_AUDIO_CONTEXT.audioWorklet != null) {
+   CSOUND_AUDIO_CONTEXT.audioWorklet !== null) {
 
     console.log("Using WASM + AudioWorklet Csound implementation");
 
@@ -67,6 +67,72 @@ if(typeof AudioWorkletNode !== 'undefined' &&
 	    };
 	}
 
+    	writeToFS(filePath, blobData) {
+	    this.port.postMessage(["writeToFS", filePath, blobData]);
+	}
+
+	compileCSD(filePath) {
+	    this.port.postMessage(["compileCSD", filePath]);
+	}
+
+	compileOrc(orcString) {
+	    this.port.postMessage(["compileOrc", orcString]);
+	}
+
+	setOption(option) {
+	    this.port.postMessage(["setOption", option]);    
+	}
+
+	render(filePath) {
+	}
+
+	evaluateCode(codeString) {
+	    this.port.postMessage(["evalCode", codeString]);
+	}
+
+	readScore(scoreString) {
+	    this.port.postMessage(["readScore", scoreString]);
+	}
+
+	setControlChannel(channelName, value) {
+	    this.port.postMessage(["setControlChannel",
+				   channelName, value]);
+	}
+
+	setStringChannel(channelName, value) {
+	    this.port.postMessage(["setStringChannel",
+				   channelName, value]);
+	}
+
+	start() {
+	    this.port.postMessage(["start"]);
+	}
+
+	reset() {
+	    this.port.postMessage(["reset"]);
+	}
+
+	destroy() {
+	}
+
+	openAudioOut() {
+	}
+
+	closeAudioOut() {
+	}
+
+	play() {
+	    this.port.postMessage(["play"]);
+	}
+
+	stop() {
+	    this.port.postMessage(["stop"]);
+	}
+
+	setMessageCallback(msgCallback) {
+	    this.msgCallback = msgCallback;
+	}
+	
     }
 
 
@@ -85,73 +151,67 @@ if(typeof AudioWorkletNode !== 'undefined' &&
 	    this.node.connect(this.audioContext.destination);
 	}
 
-	writeToFS(filePath, blobData) {
-	    this.node.port.postMessage(["writeToFS", filePath, blobData]);
+	getNode() {
+            return this.node;
+	}
+
+	// methods delegate to node
+       	writeToFS(filePath, blobData) {
+	    this.node.writeToFS(filePath, blobData);
 	}
 
 	compileCSD(filePath) {
-	    // not sure what to do about file path...
-	    // need to see what can be accessed in
-	    // worklet scope
-	    this.node.port.postMessage(["compileCSD", filePath]);
+	    this.node.compileCSD(filePath);
 	}
 
 	compileOrc(orcString) {
-	    this.node.port.postMessage(["compileOrc", orcString]);
+	    this.node.compileOrc(orcString);
 	}
 
 	setOption(option) {
-	    this.node.port.postMessage(["setOption", option]);    
+	    this.node.setOption(option);  
 	}
 
 	render(filePath) {
 	}
 
 	evaluateCode(codeString) {
-	    this.node.port.postMessage(["evalCode", codeString]);
+	    this.node.evaluateCode(codeString);
 	}
 
 	readScore(scoreString) {
-	    this.node.port.postMessage(["readScore", scoreString]);
+	    this.node.readScore(scoreString);
 	}
 
 	setControlChannel(channelName, value) {
-	    this.node.port.postMessage(["setControlChannel",
-					channelName, value]);
+	    this.node.setControlChannel(channelName, value);
 	}
 
 	setStringChannel(channelName, value) {
-	    this.node.port.postMessage(["setStringChannel",
-					channelName, value]);
+	    this.node.setStringChannel(channelName, value);
 	}
 
 	start() {
-	    this.node.port.postMessage(["start"]);
+	    this.node.start();
 	}
 
 	reset() {
-	    this.node.port.postMessage(["reset"]);
+	    this.node.reset();
 	}
 
 	destroy() {
 	}
 
-	openAudioOut() {
-	}
-
-	closeAudioOut() {
-	}
-
 	play() {
-	    this.node.port.postMessage(["play"]);
+	    this.node.play();
 	}
 
 	stop() {
-	     this.node.port.postMessage(["stop"]);
+	    this.node.stop();
 	}
 
 	setMessageCallback(msgCallback) {
-	    this.node.msgCallback = msgCallback;
+	    this.node.setMessageCallback(msgCallback);
 	}
 
 
@@ -166,6 +226,12 @@ if(typeof AudioWorkletNode !== 'undefined' &&
 			}) }) })      
 	    }) 
 	}
+
+	/** Node creation */
+	static createNode() {
+            return new CsoundNode(this.audioContext);
+	}
+	
     }
 
 
@@ -178,9 +244,8 @@ if(typeof AudioWorkletNode !== 'undefined' &&
 
     // Create global var here 
 
-    CsoundObj = function() { 
-
-
+    CsoundObj = function() {
+	
 	var WAM = AudioWorkletGlobalScope.WAM;
 	var Module = WAM;
 
@@ -240,30 +305,6 @@ if(typeof AudioWorkletNode !== 'undefined' &&
 	}
 	
 	this.enableAudioInput = function(audioInputCallback) {
-
-	    //window.navigator = window.navigator || {};
-	    //navigator.getUserMedia = navigator.getUserMedia||navigator.webkitGetUserMedia ||navigator.mozGetUserMedia||null;
-
-	    //if (navigator.getUserMedia === null) {
-
-	    //    Module['print']("Audio Input not supported in this browser");
-	    //    audioInputCallback(false);
-	    //}	
-	    //else{
-	    //    function onSuccess(stream) {
-
-	    //  microphoneNode = audioContext.createMediaStreamSource(stream);	
-	    //  audioInputCallback(true);
-	    //    };
-	    //    function onFailure(error) {
-
-	    //  microphoneNode = null;	
-	    //  audioInputCallback(false);
-	    //  Module['print']("Could not initialise audio input, error:" +  error); 
-	    //    };
-	    //    navigator.getUserMedia({audio:true}, onSuccess, onFailure);
-	    //}		
-
 	};
 
 	this.enableMidiInput = function(midiInputCallback) {
@@ -385,8 +426,10 @@ if(typeof AudioWorkletNode !== 'undefined' &&
 	this.getScoreTime = function() {
             _getScoreTime(_self);
 	}
-	
-	var getAudioProcessNode = function() {
+
+	// this function creates the SPN and
+	// sets up methods that will delegate back to CsoundObj
+	this.getAudioProcessNode = function() {
 
 	    var inputChannelCount = _getInputChannelCount(_self);
 	    var outputChannelCount = _getOutputChannelCount(_self);
@@ -395,6 +438,63 @@ if(typeof AudioWorkletNode !== 'undefined' &&
 	    // console.error("bufferSize = " + bufferSize);
 	    audioProcessNode.inputCount = inputChannelCount;
 	    audioProcessNode.outputCount = outputChannelCount;
+
+	    audioProcessNode.writeToFS = function (filePath, blobData) {
+                that.writeToFS(filePath, blobData);
+	    }
+
+	    audioProcessNode.compileCSD  = function(filePath) {
+	        that.compileCSD(filePath);
+	    }
+
+	    audioProcessNode.compileOrc = function(orcString) {
+	        that.compileOrc(orcString);
+            }
+
+	    audioProcessNode.setOption = function(option) {
+	        that.setOption(option);
+	    }
+
+	    audioProcessNode.render = function(filePath) {
+		that.render(filePath);
+	    }
+
+	    audioProcessNode.evaluateCode = function(codeString) {
+	        that.evaluateCode(codeString);
+	    }
+
+	    audioProcessNode.readScore = function(scoreString) {
+		that.readScore(scoreString);
+	    }
+
+	    audioProcessNode.setControlChannel = function(channelName, value) {
+		that.setControlChannel(channelName, value);
+	    }
+
+	    audioProcessNode.setStringChannel = function(channelName, value) {
+		that.setStringChannel(channelName, value); 
+	    }
+
+	    audioProcessNode.start = function() {
+		that.start();
+	    }
+
+	    audioProcessNode.reset = function() {
+		that.reset();
+	    }
+
+	    audioProcessNode.destroy = function() {
+		that.destroy();
+	    }
+
+	    audioProcessNode.play = function() {
+		that.play();
+	    }
+
+	    audioProcessNode.setMessageCallback = function(msgCallback) {
+		that.setMessageCallback(msgCallback);
+	    }
+	    
 	    return audioProcessNode;
 	};
 
@@ -402,8 +502,16 @@ if(typeof AudioWorkletNode !== 'undefined' &&
 	this.start = function() {
 	    if(that.running == true)  return;
 	    var ksmps = _getKsmps(_self);
-	    // console.error("ksmps = " + ksmps);
-	    var audioProcessNode = getAudioProcessNode();
+	    var mkconnections = false;
+
+	    // if SPN has not been created yet
+	    // it belongs to CsoundObj
+	    // and we instantiate it here
+	    if( typeof that.audioProcessNode == 'undefined') {
+		that.audioProcessNode = that.getAudioProcessNode();
+		mkconnections = true;
+            }
+	    var audioProcessNode = that.audioProcessNode;
 	    var inputChannelCount = audioProcessNode.inputCount;
 	    var outputChannelCount = audioProcessNode.outputCount;
 	    var outputPointer = _getOutputBuffer(_self);	
@@ -433,20 +541,21 @@ if(typeof AudioWorkletNode !== 'undefined' &&
 		}
 	    };
 
-	    if (microphoneNode !== null) {
-
-		if (inputChannelCount >= microphoneNode.numberOfInputs) {
-
-		    microphoneNode.connect(audioProcessNode);
+	    // connect to source/destination
+	    // if SPN created from CsoundObj
+	    if(mkconnections == true) {
+		if (microphoneNode !== null) {
+		    if (inputChannelCount >= microphoneNode.numberOfInputs) {
+			microphoneNode.connect(audioProcessNode);
+		    }
+		    else {
+			console("Insufficient number of Csound inputs: nchnls_i, not starting");
+			return;
+		    }
 		}
-		else {
-
-		    console("Insufficient number of Csound inputs: nchnls_i, not starting");
-		    return;
-		}
+		audioProcessNode.connect(audioContext.destination);
 	    }
-
-	    audioProcessNode.connect(audioContext.destination);
+	    
 	    audioProcessNode.onaudioprocess = function(e) {
 		var idx = 0;
 		var sample_count;
@@ -485,6 +594,8 @@ if(typeof AudioWorkletNode !== 'undefined' &&
 		audioProcessNode.onaudioprocess = null;
 		that.running = false;
 	    };
+	    
+	    audioProcessNode.stop = that.stop;
 	};
 
 	this.reset = function() {
@@ -495,14 +606,6 @@ if(typeof AudioWorkletNode !== 'undefined' &&
 	this.destroy = function() {
             _destroy(_self);
 	};
-
-	this.openAudioOut = function() {
-            _openAudioOut(_self);
-	}
-
-	this.closeAudioOut = function() {
-            _closeAudioOut(_self);
-	}
 
 	this.play = function() {
             _play(_self);
@@ -535,6 +638,20 @@ if(typeof AudioWorkletNode !== 'undefined' &&
 	    FS.close(stream);
 	}
 
+	// get the note, creating it first if it does not exist
+	this.getNode = function() {
+	    if(this.audioProcessNode == 'undefined')
+		this.start();
+	    return this.audioProcessNode;
+	}
+
+    }
+
+    
+    // create a node
+    CsoundObj.createNode = function() {
+	var csound = new CsoundObj;
+        return csound.getAudioProcessNode();
     }
 
     CsoundObj.loadScript = function (src, callback) {
