@@ -156,7 +156,66 @@ class CsoundObj {
     setStringChannel(channelName, stringValue) {
         this.node.setStringChannel(channelName, stringValue);
     }
+    
+    /** Request the data from a control channel 
+     *
+     * @param {string} channelName A string containing the channel name.
+     * @param {function} callback An optional callback to be called when
+     *  the requested data is available. This can be set once for all
+     *  subsequent requests.
+     */ 
+    requestControlChannel(channelName, callback = null) {
+        this.node.requestControlChannel(channelName, callback);
+    }
 
+    /** Get the latest requested channel data 
+     *
+     * @param {string} channelName A string containing the channel name.
+     * @returns {(number|string)} The latest channel value requested.
+     */   
+    getChannel(channelName) {
+        return this.node.getChannel(channelName);
+    }
+
+    /** Request the data from a Csound function table
+     *
+     * @param {number} number The function table number
+     * @param {function} callback An optional callback to be called when
+     *  the requested data is available. This can be set once for all
+     *  subsequent requests.
+     */ 
+    requestTable(number, callback = null) {
+         this.node.requestTable(number, callback);
+    }
+
+    /** Get the requested table number
+     *
+     * @param {number} number The function table number
+     * @returns {Float32Array} The table as a typed array.
+     */   
+    getTable(number) {
+        return this.node.getTable(number);
+    }
+
+    /** Set a specific table position
+     *
+     * @param {number} number The function table number
+     * @param {number} index The index of the position to be set
+     * @param {number} value The value to set
+     */ 
+    setTableValue(number, index, value) {
+        this.node.setTableValue(number, index, value);
+    }
+
+    /** Set a table with data from an array
+     *
+     * @param {number} number The function table number
+     * @param {Float32Array} table The source data for the table
+     */   
+    setTable(number, table) {
+        this.node.setTable(number, table);
+    }
+    
     /** Starts the node containing the Csound engine.
      */
     start() {

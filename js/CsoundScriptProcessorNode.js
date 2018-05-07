@@ -124,7 +124,7 @@ class CsoundScriptProcessorNodeFactory {
  *   @param {object} options Configuration options, holding numberOfInputs,
  *   numberOfOutputs
  *   @returns {object} A new CsoundScriptProcessorNode
-*/
+ */
 CsoundScriptProcessorNode  = function(context, options) {
     var spn = context.createScriptProcessor(0, options.numberOfInputs, options.numberOfOutputs);
     spn.inputCount = options.numberOfInputs;
@@ -162,8 +162,12 @@ CsoundScriptProcessorNode  = function(context, options) {
         cnt: 0,
         res: 0,
         nchnls_i: options.numberOfInputs, 
-        nchnls: options.numberOfOutputs,         
-
+        nchnls: options.numberOfOutputs,
+        channel: {},
+        channelCallback: {},
+        table: {},
+        tableCallback: {},
+        
         /** 
          *
          *  Writes data to a file in the WASM filesystem for
@@ -263,6 +267,77 @@ CsoundScriptProcessorNode  = function(context, options) {
         setStringChannel(channelName, value) {
             CSOUND.setStringChannel(this.csound, channelName, value); 
         },
+
+        /** Request the data from a control channel 
+         *
+         * @param {string} channelName A string containing the channel name.
+         * @param {function} callback An optional callback to be called when
+         *  the requested data is available. This can be set once for all
+         *  subsequent requests.
+         */ 
+        requestControlChannel(channelName, callback = null) {
+            this.channel[channelName] = CSOUND.getControlChannel(this.csound, channelName);
+            if (callback !== null)
+                this.channelCallback[channelName] = callback;
+            if (typeof this.channelCallback[channelName] !== 'undefined')
+                this.channelCallback[channelName]();   
+        },
+
+        /** Get the latest requested channel data 
+         *
+         * @param {string} channelName A string containing the channel name.
+         * @returns {(number|string)} The latest channel value requested.
+         */   
+        getChannel(channelName) {
+            return this.channel[channelName];
+        },
+
+        /** Request the data from a Csound function table
+         *
+         * @param {number} number The function table number
+         * @param {function} callback An optional callback to be called when
+         *  the requested data is available. This can be set once for all
+         *  subsequent requests.
+         */ 
+        requestTable(number, callback = null) {
+            let buffer = CSOUND.getTable(this.csound, number);
+            let len = CSOUND.getTableLength(this.csound, number);
+            let src = new Float32Array(WAM.HEAP8.buffer, buffer, len);
+            this.table[number] = new Float32Array(src);
+            if (callback !== null)
+                this.tableCallback[number] = callback;
+            if(typeof this.tableCallback[number] != 'undefined')
+                this.tableCallback[number]();
+        },
+
+        /** Get the requested table number
+         *
+         * @param {number} number The function table number
+         * @returns {Float32Array} The table as a typed array.
+         */   
+        getTable(number) {
+            return this.table[number];
+        },
+
+        /** Set a specific table position
+         *
+         * @param {number} number The function table number
+         * @param {number} index The index of the position to be set
+         * @param {number} value The value to set
+         */ 
+        setTableValue(number, index, value) {
+            CSOUND.setTable(this.csound, number, index, value);
+        },
+
+        /** Set a table with data from an array
+         *
+         * @param {number} number The function table number
+         * @param {Float32Array} table The source data for the table
+         */   
+        setTable(number, table) {
+            for(let i = 0; i < table.length; i++)
+                CSOUND.setTable(this.csound, number, i, table[i]);
+        },
         
         /** Starts processing in this node
          *  @memberof CsoundMixin
@@ -336,6 +411,14 @@ CsoundScriptProcessorNode  = function(context, options) {
         onaudioprocess(e) {
             if (this.csoundOutputBuffer == null ||
                 this.running == false) {
+                let output = e.outputBuffer;
+                let bufferLen = output.getChannelData(0).length;
+                for (let i = 0; i < bufferLen; i++) {
+                    for (let channel = 0; channel < output.numberOfChannels; channel++) {
+                        let outputChannel = output.getChannelData(channel);
+                        outputChannel[i] = 0;
+                    }
+                }
                 return;
             }
 

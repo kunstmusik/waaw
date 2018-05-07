@@ -34,11 +34,13 @@ var CSOUND_AUDIO_CONTEXT = CSOUND_AUDIO_CONTEXT ||
  */
 class CsoundNode extends AudioWorkletNode {
 
-    /** @constructor
+    /** 
      *
-     * @param {AudioContext} context AudioContext in which this node will run.
+     * @constructor
+     * @param {AudioContext} context AudioContext in which this node will run
      * @param {object} options Configuration options, holding numberOfInputs,
-     *   numberOfOutputs.
+     *   numberOfOutputs
+     * @returns {object} A new CsoundNode
      */
     constructor(context, options) {
         options = options || {};
@@ -52,16 +54,29 @@ class CsoundNode extends AudioWorkletNode {
         this.msgCallback = (msg) => { console.log(msg); }
 
         this.port.start();
+        this.channel =  {};
+        this.channelCallback = {};
+        this.table = {};
+        this.tableCallback = {};
         this.port.onmessage = (event) => {
             let data = event.data;
             switch(data[0]) {
             case "log":
                 this.msgCallback(data[1]);
                 break;
+            case "control":
+                this.channel[data[1]] = data[2];
+                if (typeof this.channelCallback[data[1]] != 'undefined')
+                      this.channelCallback[data[1]](); 
+                break;
+            case "table":
+                this.table[data[1]] = data[2];
+                if (typeof this.tableCallback[data[1]] != 'undefined')
+                      this.tableCallback[data[1]](); 
+               break;
             default:
                 console.log('[CsoundNode] Invalid Message: "' + event.data);
             }
-
         };
     }
     
@@ -141,6 +156,71 @@ class CsoundNode extends AudioWorkletNode {
                                channelName, value]);
     }
 
+    /** Request the data from a control channel 
+     *
+     * @param {string} channelName A string containing the channel name.
+     * @param {function} callback An optional callback to be called when
+     *  the requested data is available. This can be set once for all
+     *  subsequent requests.
+     */ 
+    requestControlChannel(channelName, callback = null) {
+        this.port.postMessage(["getControlChannel",
+                               channelName]);
+        if (callback !== null)
+          this.channelCallback[channelName] = callback;
+    }
+
+    /** Get the latest requested channel data 
+     *
+     * @param {string} channelName A string containing the channel name.
+     * @returns {(number|string)} The latest channel value requested.
+     */   
+    getChannel(channelName) {
+        return this.channel[channelName];
+    }
+
+     /** Request the data from a Csound function table
+     *
+     * @param {number} number The function table number
+     * @param {function} callback An optional callback to be called when
+     *  the requested data is available. This can be set once for all
+     *  subsequent requests.
+     */ 
+    requestTable(number, callback = null) {
+        this.port.postMessage(["getTable", number]);
+        if (callback !== null)
+          this.tableCallback[number] = callback;
+    }
+
+    /** Get the requested table number
+     *
+     * @param {number} number The function table number
+     * @returns {Float32Array} The table as a typed array.
+     */   
+    getTable(number) {
+        return this.table[number];
+    }
+
+    /** Set a specific table position
+     *
+     * @param {number} number The function table number
+     * @param {number} index The index of the position to be set
+     * @param {number} value The value to set
+     */ 
+    setTableValue(number, index, value) {
+        this.port.postMessage(["setTableAtIndex", number,
+                              index, value]);
+    }
+
+    /** Set a table with data from an array
+     *
+     * @param {number} number The function table number
+     * @param {Float32Array} table The source data for the table
+     */   
+    setTable(number, table) {
+        this.port.postMessage(["setTable", number, table]);
+    }
+    
     /** Starts processing in this node
      */
     start() {

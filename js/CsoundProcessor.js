@@ -94,6 +94,14 @@ class CsoundProcessor extends AudioWorkletProcessor {
     process(inputs, outputs, parameters) {
         if (this.csoundOutputBuffer == null ||
             this.running == false) {
+             let output =  outputs[0];
+                let bufferLen = output[0].length;
+                for (let i = 0; i < bufferLen; i++) {
+                    for (let channel = 0; channel < output.numberOfChannels; channel++) {
+                        let outputChannel = output[channel];
+                        outputChannel[i] = 0;
+                    }
+                }
             return true;
         }
 
@@ -161,6 +169,7 @@ class CsoundProcessor extends AudioWorkletProcessor {
 
     handleMessage(event) {
         let data = event.data;
+        let p = this.port;
 
         switch (data[0]) {
         case "compileCSD":
@@ -228,6 +237,26 @@ class CsoundProcessor extends AudioWorkletProcessor {
             let byte3 = data[3];
             Csound.pushMidiMessage(this.csObj, byte1, byte2, byte3);
             break;
+        case "getControlChannel":
+            let channel = data[1];
+            let value = Csound.getControlChannel(this.csObj, channel);
+            p.postMessage(["control", channel, value]);
+            break;
+        case "getTable":
+            let buffer = Csound.getTable(this.csObj, data[1]);
+            let len = Csound.getTableLength(this.csObj, data[1]);
+            let src = new Float32Array(WAM.HEAP8.buffer, buffer, len);
+            let table = new Float32Array(src);
+            p.postMessage(["table", data[1], table]);
+            break;
+        case "setTableAtIndex":
+            Csound.setTable(this.csObj, data[1], data[2], data[3]);
+            break;
+        case "setTable":
+            let cstable = new Float32Array(data[2]);
+            for(let i = 0; i < cstable.length; i++)
+                Csound.setTable(this.csObj, data[1], i, cstable[i]);
+            break;         
         default:
             console.log('[CsoundAudioProcessor] Invalid Message: "' + event.data);
         }
