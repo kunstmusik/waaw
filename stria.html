@@ -15,7 +15,9 @@
             document.getElementById("tit").innerHTML =
                 "Stria (J. Chowning)";
             document.getElementById("stit").innerHTML =
-                "reconstruction by K. Dahan";
+"reconstruction by K. Dahan";
+
+document.getElementById("mess").addEventListener('touchstart', touch_this);
         }
 
         function attachListeners() {}
@@ -24,7 +26,11 @@
             var messField = document.getElementById("mess")
             messField.innerText += message;
             scrollTo(0, messField.scrollHeight);
-        }
+}
+
+function touch_this(){
+CSOUND_AUDIO_CONTEXT.resume();
+}
     </script>
 </head>
 
