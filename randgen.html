@@ -112,7 +112,12 @@
         });
 
 
-    }
+}
+
+function click(){
+CSOUND_AUDIO_CONTEXT.resume();
+}
+
 </script>
 </head>
 <body onload="main()">
@@ -125,6 +130,7 @@
 <canvas id='mags' width=400 height=200 style="border:1px solid#000000;">
 </canvas>
 
+<button id="playButton" onclick="click()">Play</button>
 
 <textarea class="code" id="instruments" hidden>
 /* this is the synthesis code
