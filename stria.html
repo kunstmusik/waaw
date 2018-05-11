@@ -19,7 +19,9 @@
 
         }
 
-        function attachListeners() {}
+function attachListeners() {
+document.getElementById('playButton').addEventListener('click', click_this);
+}
 
         function handleMessage(message) {
             var messField = document.getElementById("mess")
@@ -27,14 +29,20 @@
             scrollTo(0, messField.scrollHeight);
 }
 
-
+function click_this(){
+CSOUND_AUDIO_CONTEXT.resume();
+}
     </script>
 </head>
 
 <body>
-    <div id="console"></div>
+<div id="console"></div>
+
     <h1 id="tit"></h1>
-    <h2 id="stit"></h2>
+<h2 id="stit"></h2>
+<p>
+<button id="playButton">touch to start</button>
+</p>
     <div id="mess"> </div>
 </body>
 
