@@ -43,7 +43,7 @@
 </head>
 
 <body>
-  <H1>Canvas Synth</H1>
+  <H1 id='tit'>Canvas Synth</H1>
   <div id="messages"> </div>
   <p>
     <canvas class="cnvs" id="cnvs" onmousemove="cnvs_getCoordinates(event)" onmousedown="cnvs_play(event)" onmouseup="cnvs_stop(event)" onmouseout="cnvs_out()" ontouchmove="cnvs_getTCoordinates(event)" ontouchstart="cnvs_tplay(event)" ontouchend="cnvs_stop(event)">
@@ -53,6 +53,7 @@
   <script type="text/javascript">
     const cons = document.getElementById("messages");
     const cnvs = document.getElementById("cnvs");
+    const tit = document.getElementById("tit");
     cons.innerText = "Loading Csound...";
     // called by csound.js
     function moduleDidLoad() {
@@ -70,7 +71,9 @@
         "outs al,ar \n" +
         "endin");
       csound.SetChannel("cf", 1000);
-      cons.innerText = "READY";
+      cons.remove();
+      tit.remove();
+      resize_cnvs();
     }
 
 
