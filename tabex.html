@@ -34,6 +34,13 @@
             border: 1px solid black;
             padding: 10px 20px;
         }
+        .butt {
+           margin: auto;
+           width: 720px;
+           padding: 10px 0px;
+           font-size: 24px;
+           background-color: #FF0000;
+        }
     </style>
 
 
@@ -108,6 +115,10 @@
             CsoundObj.importScripts("./js/").then(() => {
                 console.log = print_msg;
                 console.warn = print_msg;
+                document.getElementById('playButton').addEventListener('click',
+                  click_this);
+                document.getElementById('playButton').disabled = false;
+                CSOUND_AUDIO_CONTEXT.suspend();
                 csound = new CsoundObj();
                 csound.compileOrc(document.getElementById('instruments').value);
                 csound.start();
@@ -179,6 +190,18 @@
             });
 
         }
+        var playing = false;
+        function click_this() {
+          if(playing == false) {
+          CSOUND_AUDIO_CONTEXT.resume();
+          document.getElementById('playButton').innerText = "pause";
+          playing = true;
+        } else {
+          CSOUND_AUDIO_CONTEXT.suspend();
+          document.getElementById('playButton').innerText = "play";
+          playing = false;
+        }
+        }
     </script>
 </head>
 
@@ -186,7 +209,6 @@
     <h1 class="center"> Step Sequencer </h1>
 <div id="console" class="center">
 </div>
-
 <div id="display">
   <div id="controls" class="center">
 <form id="forma">
@@ -195,7 +217,7 @@
     <th id="tab1"><input type="checkbox" id="step1" checked
       onchange="setStep()"> 1 <br>
     <input type="range" name="frequency" id="freq1" step="1" value="0"
-        min="0" max="12" onchange="setPitch()"> 
+        min="0" max="12" onchange="setPitch()">
     </th>
     <th id="tab2"> <input type="checkbox" id="step2" checked
       onchange="setStep()"> 2 <br>
@@ -237,8 +259,11 @@
 </form>
 <div class="bpm">
 <input  type="range" name="bpm" id="bpm" step="1" value="120"
-  min="30" max="480" oninput="setBpm()"> BPM 
+  min="30" max="480" oninput="setBpm()"> BPM
 </div>
+<p>
+  <button id="playButton" disabled class="butt">play</button>
+</p>
 </div>
 <div id="screens">
 <canvas id='scope' width=400 height=200 style="border:1px solid#000000;">

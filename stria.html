@@ -6,43 +6,43 @@
 -->
 
 <head>
-    <title>WebAudio Csound</title>
-    <script type="text/javascript" src="js/csound.js"></script>
-    <script type="text/javascript">
-        // called by csound.js
-        function moduleDidLoad() {
-            csound.PlayCsd("stria.csd");
-            document.getElementById("tit").innerHTML =
-                "Stria (J. Chowning)";
-            document.getElementById("stit").innerHTML =
-"reconstruction by K. Dahan, touch here to start";
-           document.getElementById('stit').addEventListener('touchstart', click_this);
-            document.getElementById("tit"). addEventListener('touchstart', click_this);
-        }
+  <title>WebAudio Csound</title>
+  <script type="text/javascript" src="js/csound.js"></script>
+  <script type="text/javascript">
+    // called by csound.js
+    function moduleDidLoad() {
+      csound.PlayCsd("stria.csd");
+      document.getElementById("tit").innerHTML =
+        "Stria (J. Chowning)";
+      document.getElementById("stit").innerHTML =
+        "reconstruction by K. Dahan, touch here to start";
+      document.getElementById('stit').addEventListener('touchstart', click_this);
+      document.getElementById("tit").addEventListener('touchstart', click_this);
+    }
 
-function attachListeners() {
+    function attachListeners() {
 
-}
+    }
 
-        function handleMessage(message) {
-            var messField = document.getElementById("mess")
-            messField.innerText += message;
-            scrollTo(0, messField.scrollHeight);
-}
+    function handleMessage(message) {
+      var messField = document.getElementById("mess")
+      messField.innerText += message;
+      scrollTo(0, messField.scrollHeight);
+    }
 
-function click_this(){
-CSOUND_AUDIO_CONTEXT.resume();
-}
-    </script>
+    function click_this() {
+      CSOUND_AUDIO_CONTEXT.resume();
+    }
+  </script>
 </head>
 
 <body>
-<div id="console"></div>
+  <div id="console"></div>
 
-    <h1 id="tit"></h1>
-<h2 id="stit"></h2>
+  <h1 id="tit"></h1>
+  <h2 id="stit"></h2>
 
-    <div id="mess"> </div>
+  <div id="mess"> </div>
 </body>
 
 </html>

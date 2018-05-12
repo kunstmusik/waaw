@@ -53,6 +53,7 @@
                 if (!playing) {
                     if (started) csound.Play();
                     else {
+                        CSOUND_AUDIO_CONTEXT.resume();
                         csound.PlayCsd("gm.csd");
                         started = true;
                     }

@@ -24,7 +24,6 @@
             SetParam("cf", 'Hz', 1., 0.);
             SetParam("freq", 'Hz', 1., 440.);
             attachListeners();
-            csound.start();
             window.addEventListener("unload", function(e) {
                 if (csound != null)
                     csound.destroy();
@@ -85,8 +84,8 @@
             console.log(name + ": " + val + " " + label);
         }
 
-        var paused = false;
-
+        var paused = true;
+        var started = false;
         function pause() {
             if (paused == false) {
                 csound.stop();
@@ -95,15 +94,21 @@
                 innerText = 'play';
                 paused = true;
             } else {
+              if (started == false) {
+                CSOUND_AUDIO_CONTEXT.resume();
+                started = true;
+              }
                 csound.start();
                 document.getElementById('pause').
                 innerText = 'pause';
+                console.log("play");
                 paused = false;
             }
         }
         CsoundObj.importScripts("./js/").then(() => {
             moduleDidLoad();
         });
+
     </script>
 </head>
 
@@ -121,7 +126,7 @@
 <textarea class="console" cols="55" rows="16" id="console">
 loading...</textarea>
 <p>
-<button type="button" id="pause"> pause </button>
+<button type="button" id="pause"> play </button>
 </p>
 <textarea class="code" id="instruments" hidden>
 /* this is the synthesis code

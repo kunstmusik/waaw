@@ -74,7 +74,12 @@
             }
         }
 
+        var started = false;
         function cnvs_play(e) {
+            if(started == false) {
+              CSOUND_AUDIO_CONTEXT.resume();
+              started = true;
+            }
             csound.Event("i1 0 -1");
             csound.SetChannel('cf', 3000);
             var c = document.getElementById("cnvs");
