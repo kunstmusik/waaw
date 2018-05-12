@@ -13,11 +13,9 @@
       font-family: "Courier New";
       color: #FCF477;
       background-color: #FF0000;
-
     }
 
     #messages {
-      z-index: 100;
       width: 800px;
       display: flex;
       align-items: center;
@@ -26,23 +24,8 @@
     }
   </style>
 
-</head>
-
-<body>
-  <H1 id='tit'>Canvas Synth</H1>
-  <p>
-    <div id="messages"> </div>
-  </p>
-  <p>
-    <canvas class="cnvs" id="cnvs" width=800 height=800></canvas>
-  </p>
   <script type="text/javascript" src="js/csound.js"></script>
   <script type="text/javascript">
-    const cons = document.getElementById("messages");
-    const cnvs = document.getElementById("cnvs");
-    const tit = document.getElementById("tit");
-    cons.innerText = "Loading Csound...";
-    // called by csound.js
     function moduleDidLoad() {
       csound.Play();
       csound.CompileOrc(
@@ -60,80 +43,91 @@
       csound.SetChannel("cf", 1000);
     }
 
-    function attachListeners() {
-      cnvs.addEventListener("touchstart", cnvs_tplay,
-         {
-          passive: true
-        } );
-      cnvs.addEventListener("touchmove", cnvs_getTCoordinates,
-         {
-          passive: true
-        } );
-      cnvs.addEventListener("touchend", cnvs_tstop,
-        {
-          passive: true
-        } );
-      cnvs.addEventListener("mousedown", cnvs_play, false);
-      cnvs.addEventListener("mouseup", cnvs_stop, false);
-      cnvs.addEventListener("mousemove", cnvs_getCoordinates, false);
-    }
-
-    var count = 0;
-
     function handleMessage(message) {
+      var cons = document.getElementById("messages");
       cons.innerText = message;
     }
 
-    var playing = false;
+    function main() {
+      var cnvs = document.getElementById("cnvs");
+      var cons = document.getElementById("messages");
+      cons.innerText = "Loading Csound...";
+      // called by csound.js
+      var playing = false;
 
-    function cnvs_getCoordinates(e) {
-      if (playing) {
+      function cnvs_getCoordinates(e) {
+        if (playing) {
+          var ctx = cnvs.getContext("2d");
+          var rect = cnvs.getBoundingClientRect();
+          x = e.clientX - rect.left
+          y = e.clientY - rect.top
+          csound.SetChannel('amp', y);
+          csound.SetChannel('freq', x);
+
+          ctx.clearRect(0, 0, cnvs.width, cnvs.height);
+          ctx.fillStyle = "#0000FF";
+          ctx.fillRect(x, y, 15, 15);
+        }
+      }
+
+      var started = false;
+
+      function cnvs_play(e) {
+        if (started == false) {
+          CSOUND_AUDIO_CONTEXT.resume();
+          started = true;
+        }
+        csound.Event("i1 0 -1");
+        csound.SetChannel('cf', 3000);
         var ctx = cnvs.getContext("2d");
         var rect = cnvs.getBoundingClientRect();
         x = e.clientX - rect.left
         y = e.clientY - rect.top
         csound.SetChannel('amp', y);
         csound.SetChannel('freq', x);
-
-        ctx.clearRect(0, 0, cnvs.width, cnvs.height);
         ctx.fillStyle = "#0000FF";
         ctx.fillRect(x, y, 15, 15);
+        playing = true;
       }
-    }
 
-    var started = false;
-
-    function cnvs_play(e) {
-      if (started == false) {
-        CSOUND_AUDIO_CONTEXT.resume();
-        started = true;
+      function cnvs_stop(e) {
+        csound.Event("i-1 0 -1");
+        csound.SetChannel('cf', 1000);
+        var ctx = cnvs.getContext("2d");
+        ctx.clearRect(0, 0, cnvs.width, cnvs.height);
+        playing = false;
       }
-      csound.Event("i1 0 -1");
-      csound.SetChannel('cf', 3000);
-      var ctx = cnvs.getContext("2d");
-      var rect = cnvs.getBoundingClientRect();
-      x = e.clientX - rect.left
-      y = e.clientY - rect.top
-      csound.SetChannel('amp', y);
-      csound.SetChannel('freq', x);
-      ctx.fillStyle = "#0000FF";
-      ctx.fillRect(x, y, 15, 15);
-      playing = true;
-    }
 
-    function cnvs_stop(e) {
-      csound.Event("i-1 0 -1");
-      csound.SetChannel('cf', 1000);
-      var ctx = cnvs.getContext("2d");
-      ctx.clearRect(0, 0, cnvs.width, cnvs.height);
-      playing = false;
-    }
+      function cnvs_out() {}
 
-    function cnvs_out() {}
+      function cnvs_getTCoordinates(e) {
+        e.preventDefault();
+        if (playing) {
+          var ctx = cnvs.getContext("2d");
+          var rect = cnvs.getBoundingClientRect();
+          touches = e.touches;
+          t = touches[0];
+          x = t.clientX - rect.left
+          y = t.clientY - rect.top
+          csound.SetChannel('amp', y);
+          csound.SetChannel('freq', x);
 
-    function cnvs_getTCoordinates(e) {
-      e.preventDefault();
-      if (playing) {
+          ctx.clearRect(0, 0, cnvs.width, cnvs.height);
+          ctx.fillStyle = "#0000FF";
+          ctx.fillRect(x, y, 50, 50);
+        }
+      }
+
+      var started = false;
+
+      function cnvs_tplay(e) {
+        e.preventDefault();
+        if (started == false) {
+          CSOUND_AUDIO_CONTEXT.resume();
+          started = true;
+        }
+        csound.Event("i1 0 -1");
+        csound.SetChannel('cf', 3000);
         var ctx = cnvs.getContext("2d");
         var rect = cnvs.getBoundingClientRect();
         touches = e.touches;
@@ -142,45 +136,33 @@
         y = t.clientY - rect.top
         csound.SetChannel('amp', y);
         csound.SetChannel('freq', x);
-
-        ctx.clearRect(0, 0, cnvs.width, cnvs.height);
         ctx.fillStyle = "#0000FF";
         ctx.fillRect(x, y, 50, 50);
+        playing = true;
       }
-    }
 
-    var started = false;
-
-    function cnvs_tplay(e) {
-      e.preventDefault();
-      if (started == false) {
-        CSOUND_AUDIO_CONTEXT.resume();
-        started = true;
+      function cnvs_tstop(e) {
+        e.preventDefault();
+        csound.Event("i-1 0 -1");
+        csound.SetChannel('cf', 1000);
+        var ctx = cnvs.getContext("2d");
+        ctx.clearRect(0, 0, cnvs.width, cnvs.height);
+        playing = false;
       }
-      csound.Event("i1 0 -1");
-      csound.SetChannel('cf', 3000);
-      var ctx = cnvs.getContext("2d");
-      var rect = cnvs.getBoundingClientRect();
-      touches = e.touches;
-      t = touches[0];
-      x = t.clientX - rect.left
-      y = t.clientY - rect.top
-      csound.SetChannel('amp', y);
-      csound.SetChannel('freq', x);
-      ctx.fillStyle = "#0000FF";
-      ctx.fillRect(x, y, 50, 50);
-      playing = true;
-    }
 
-    function cnvs_tstop(e) {
-      e.preventDefault();
-      csound.Event("i-1 0 -1");
-      csound.SetChannel('cf', 1000);
-      var ctx = cnvs.getContext("2d");
-      ctx.clearRect(0, 0, cnvs.width, cnvs.height);
-      playing = false;
+      cnvs.addEventListener("touchstart", cnvs_tplay, {
+        passive: true
+      });
+      cnvs.addEventListener("touchmove", cnvs_getTCoordinates, {
+        passive: true
+      });
+      cnvs.addEventListener("touchend", cnvs_tstop, {
+        passive: true
+      });
+      cnvs.addEventListener("mousedown", cnvs_play, false);
+      cnvs.addEventListener("mouseup", cnvs_stop, false);
+      cnvs.addEventListener("mousemove", cnvs_getCoordinates, false);
     }
-
 
     window.oncontextmenu = function(event) {
       event.preventDefault();
@@ -188,6 +170,17 @@
       return false;
     };
   </script>
+</head>
+
+<body onload="main()">
+  <H1 id='tit'>Canvas Synth</H1>
+  <p>
+    <div id="messages"> </div>
+  </p>
+  <p>
+    <canvas class="cnvs " id="cnvs" width=800 height=800></canvas>
+  </p>
+
 </body>
 
 </html>
