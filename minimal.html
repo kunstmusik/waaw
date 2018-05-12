@@ -50,7 +50,8 @@
 
 
         // click handler
-        function Play() {
+function Play() {
+CSOUND_AUDIO_CONTEXT.resume();
             csound.Event("i 1 0 5");
         }
     </script>
