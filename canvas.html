@@ -8,26 +8,52 @@
 <head>
   <title>WebAudio Csound </title>
   <style type="text/css">
-    textarea.console {
-      font-family: "Courier New";
-      color: #FCF477;
-      background-color: #007700
+    * {
+      padding: 0;
+      margin: 0;
     }
 
-    body,
-    html {
-     position: fixed;
-     }
+    html,
+    body {
+      min-height: 100% !important;
+      height: 100%;
+      overflow: hidden;
+    }
 
     canvas.cnvs {
-      touch-action:none;
+      touch-action: none;
       font-family: "Courier New";
       color: #FCF477;
-      background-color: #FF0000
+      background-color: #FF0000;
+      height: 100%;
+      width: 100%;
+    }
+
+    #messages {
+      z-index: 100;
+      float: left;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: Monospace;
     }
   </style>
+
+</head>
+
+<body>
+  <H1>Canvas Synth</H1>
+  <div id="messages"> </div>
+  <p>
+    <canvas class="cnvs" id="cnvs" onmousemove="cnvs_getCoordinates(event)" onmousedown="cnvs_play(event)" onmouseup="cnvs_stop(event)" onmouseout="cnvs_out()" ontouchmove="cnvs_getTCoordinates(event)" ontouchstart="cnvs_tplay(event)" ontouchend="cnvs_stop(event)">
+      </canvas>
+  </p>
   <script type="text/javascript" src="js/csound.js"></script>
   <script type="text/javascript">
+    const cons = document.getElementById("messages");
+    const cnvs = document.getElementById("cnvs");
+    cons.innerText = "Loading Csound...";
     // called by csound.js
     function moduleDidLoad() {
       csound.Play();
@@ -43,24 +69,29 @@
         "al,ar freeverb a2,a2, 0.3, 0.8 \n" +
         "outs al,ar \n" +
         "endin");
-
       csound.SetChannel("cf", 1000);
+      cons.innerText = "READY";
     }
+
+
+    function resize_cnvs() {
+
+      let w = document.body.clientWidth;
+      let h = document.body.clientHeight;
+
+      if (cnvs.width != w || cnvs.height != h) {
+        cnvs.width = w;
+        cnvs.height = h;
+      }
+    }
+
+    resize_cnvs();
 
     function attachListeners() {}
 
     var count = 0;
 
-    function handleMessage(message) {
-      var element = document.getElementById('console');
-      element.value += message;
-      element.scrollTop = 99999; // focus on bottom
-      count += 1;
-      if (count == 1000) {
-        element.value = ' ';
-        count = 0;
-      }
-    }
+    function handleMessage(message) {cons.innerText = message;}
 
     var playing = false;
 
@@ -74,7 +105,7 @@
         csound.SetChannel('amp', y);
         csound.SetChannel('freq', x);
 
-        ctx.clearRect(0, 0, 400, 400);
+        ctx.clearRect(0, 0, cnvs.width, cnvs.height);
         ctx.fillStyle = "#0000FF";
         ctx.fillRect(x, y, 10, 10);
       }
@@ -106,7 +137,7 @@
       csound.SetChannel('cf', 1000);
       var c = document.getElementById("cnvs");
       var ctx = c.getContext("2d");
-      ctx.clearRect(0, 0, 400, 400);
+      ctx.clearRect(0, 0, cnvs.width, cnvs.height);
       playing = false;
     }
 
@@ -124,7 +155,7 @@
         csound.SetChannel('amp', y);
         csound.SetChannel('freq', x);
 
-        ctx.clearRect(0, 0, 400, 400);
+        ctx.clearRect(0, 0, cnvs.width, cnvs.height);
         ctx.fillStyle = "#0000FF";
         ctx.fillRect(x, y, 10, 10);
       }
@@ -158,25 +189,19 @@
       csound.SetChannel('cf', 1000);
       var c = document.getElementById("cnvs");
       var ctx = c.getContext("2d");
-      ctx.clearRect(0, 0, 400, 400);
+      ctx.clearRect(0, 0, cnvs.width, cnvs.height);
       playing = false;
     }
+    document.ontouchmove = function(event) {
+      event.preventDefault();
+    };
 
-    document.ontouchmove = function(event){
-        event.preventDefault();
-    }
+    window.oncontextmenu = function(event) {
+      event.preventDefault();
+      event.stopPropagation();
+      return false;
+    };
   </script>
-</head>
-
-<body>
-  <H1>Canvas Synth</H1>
-  <p>
-    <canvas class="cnvs" id="cnvs" width="400" height="400" style="border:1px solid#000000;" onmousemove="cnvs_getCoordinates(event)" onmousedown="cnvs_play(event)" onmouseup="cnvs_stop(event)" onmouseout="cnvs_out()" ontouchmove="cnvs_getTCoordinates(event)"
-      ontouchstart="cnvs_tplay(event)" ontouchend="cnvs_stop(event)">
-
-      </canvas>
-  </p>
-  <textarea class="console" cols="55" rows="13" id="console">Csound: not loaded</textarea>
 </body>
 
 </html>
