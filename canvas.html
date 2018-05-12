@@ -8,7 +8,6 @@
 <head>
   <title>WebAudio Csound </title>
   <style type="text/css">
-
     canvas.cnvs {
       touch-action: none;
       font-family: "Courier New";
@@ -32,11 +31,10 @@
 <body>
   <H1 id='tit'>Canvas Synth</H1>
   <p>
-  <div id="messages"> </div>
-</p>
+    <div id="messages"> </div>
+  </p>
   <p>
-    <canvas class="cnvs" id="cnvs" width=800 height=800 onmousemove="cnvs_getCoordinates(event)" onmousedown="cnvs_play(event)" onmouseup="cnvs_stop(event)" onmouseout="cnvs_out()" ontouchmove="cnvs_getTCoordinates(event)" ontouchstart="cnvs_tplay(event)" ontouchend="cnvs_stop(event)">
-      </canvas>
+    <canvas class="cnvs" id="cnvs" width=800 height=800></canvas>
   </p>
   <script type="text/javascript" src="js/csound.js"></script>
   <script type="text/javascript">
@@ -62,13 +60,29 @@
       csound.SetChannel("cf", 1000);
     }
 
-
-
-    function attachListeners() {}
+    function attachListeners() {
+      cnvs.addEventListener("touchstart", cnvs_tplay,
+         {
+          passive: true
+        } );
+      cnvs.addEventListener("touchmove", cnvs_getTCoordinates,
+         {
+          passive: true
+        } );
+      cnvs.addEventListener("touchend", cnvs_tstop,
+        {
+          passive: true
+        } );
+      cnvs.addEventListener("mousedown", cnvs_play, false);
+      cnvs.addEventListener("mouseup", cnvs_stop, false);
+      cnvs.addEventListener("mousemove", cnvs_getCoordinates, false);
+    }
 
     var count = 0;
 
-    function handleMessage(message) {cons.innerText = message;}
+    function handleMessage(message) {
+      cons.innerText = message;
+    }
 
     var playing = false;
 

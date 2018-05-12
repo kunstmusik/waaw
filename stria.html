@@ -16,8 +16,10 @@
         "Stria (J. Chowning)";
       document.getElementById("stit").innerHTML =
         "reconstruction by K. Dahan, touch here to start";
-      document.getElementById('stit').addEventListener('touchstart', click_this);
-      document.getElementById("tit").addEventListener('touchstart', click_this);
+      document.getElementById('stit').addEventListener('touchstart', click_this,
+      {passive: true});
+      document.getElementById("tit").addEventListener('touchstart', click_this,
+      {passive: true});
     }
 
     function attachListeners() {
