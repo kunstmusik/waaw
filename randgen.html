@@ -42,8 +42,10 @@
 
         CsoundObj.importScripts("./js/").then(() => {
            console.log = print_msg;
-console.warn = print_msg;
-document.getElementById('playButton').addEventListener('click', click_this);
+           console.warn = print_msg;
+           document.getElementById('playButton').addEventListener('click',
+click_this);
+document.getElementById('playButton').disabled = false;
             csound = new CsoundObj();
             csound.compileOrc(document.getElementById('instruments').value);
             csound.start();
@@ -131,7 +133,7 @@ CSOUND_AUDIO_CONTEXT.resume();
 <canvas id='mags' width=400 height=200 style="border:1px solid#000000;">
 </canvas>
 <p>
-<button id="playButton">touch to start</button>
+<button id="playButton" disabled>touch to start</button>
 </p>
 <textarea class="code" id="instruments" hidden>
 /* this is the synthesis code

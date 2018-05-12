@@ -15,12 +15,13 @@
             document.getElementById("tit").innerHTML =
                 "Stria (J. Chowning)";
             document.getElementById("stit").innerHTML =
-"reconstruction by K. Dahan";
-
+"reconstruction by K. Dahan, touch here to start";
+           document.getElementById('stit').addEventListener('touchstart', click_this);
+            document.getElementById("tit"). addEventListener('touchstart', click_this);
         }
 
 function attachListeners() {
-document.getElementById('playButton').addEventListener('click', click_this);
+
 }
 
         function handleMessage(message) {
@@ -40,9 +41,7 @@ CSOUND_AUDIO_CONTEXT.resume();
 
     <h1 id="tit"></h1>
 <h2 id="stit"></h2>
-<p>
-<button id="playButton">touch to start</button>
-</p>
+
     <div id="mess"> </div>
 </body>
 
